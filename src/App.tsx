@@ -1,13 +1,14 @@
 
 import { NextUIProvider } from "@nextui-org/react";
 import "./App.css";
-import Card from "./pages/Hello";
+import Hello from "./pages/Hello";
+
 
 function App() {
   return (
-    <NextUIProvider>
-      <Card />
-    </NextUIProvider>
+    <div>
+      <Hello/>
+    </div>
   );
 }
 export default App;
