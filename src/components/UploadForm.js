@@ -1,55 +1,40 @@
-import React from 'react';
-import Uppy from '@uppy/core';
-import { DragDrop } from '@uppy/react';
-import '@uppy/core/dist/style.css';
-import '@uppy/drag-drop/dist/style.css';
+import React from "react";
+import Uppy from "@uppy/core";
+import "@uppy/core/dist/style.css";
+import "@uppy/dashboard/dist/style.css";
+import { Dashboard } from "@uppy/react";
 
 class UploadForm extends React.Component {
   constructor(props) {
     super(props);
-    // Initialize the component state with an empty uploadedFile property
-    this.state = {
-      uploadedFile: null,
-    };
-    // Initialize a new Uppy instance with file restrictions and autoProceed set to true
+    this.state = { uploadedFiles: [] };
     this.uppy = new Uppy({
-      restrictions: {
-        maxNumberOfFiles: 1, // Allow only one file to be uploaded
-        allowedFileTypes: ['txt/*'], // Allow only image and video files
-        maxFileSize: 5242880, // 5MB in bytes
-      },
-      autoProceed: true, // Automatically start the upload once a file is selected
+      autoProceed: false,
+      restrictions: { maxNumberOfFiles: 1 },
+    }).on("complete", (result) => {
+      console.log("SUCCESS!!")
+      const uploadedFiles = result.successful.map((file) => ({
+        id: file.id,
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        url: URL.createObjectURL(file.data),
+      }));
+      this.setState({ uploadedFiles });
     });
-    // Add an event listener for the `complete` event to handle the uploaded file data
-    this.uppy.on('complete', this.handleUploadComplete);
   }
 
-  // Handle the `complete` event by extracting the uploaded file data and updating the component state
-  handleUploadComplete = (result) => {
-    const file = result.successful[0].data;
-    this.setState({ uploadedFile: file });
-  };
 
   render() {
-    // Extract the uploadedFile state variable
-    const { uploadedFile } = this.state;
     return (
-      <div style={{width: "30%", marginLeft: "auto", marginRight: "auto"}}>
-        {!uploadedFile && (
-          // Render the DragDrop component if a file has not yet been uploaded
-          <DragDrop
-            uppy={this.uppy}
-            locale={{
-              strings: {
-                dropHereOr: 'Drop file here or click to browse',
-              },
-            }}
-          />
-        )}
-        {uploadedFile && (
-          // Display the name of the uploaded file if one has been uploaded
-          <p>Uploaded file: {uploadedFile.name}</p>
-        )}
+      <div>
+        <Dashboard
+          uppy={this.uppy}
+          plugins={["Webcam"]}
+          inline={true}
+          height={200}
+        />
+
       </div>
     );
   }
