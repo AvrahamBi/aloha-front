@@ -1,43 +1,43 @@
-import React from "react";
-import Uppy from "@uppy/core";
-import "@uppy/core/dist/style.css";
-import "@uppy/dashboard/dist/style.css";
-import { Dashboard } from "@uppy/react";
+import { useState } from 'react';
 
-class UploadForm extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { uploadedFiles: [] };
-    this.uppy = new Uppy({
-      autoProceed: false,
-      restrictions: { maxNumberOfFiles: 1 },
-    }).on("complete", (result) => {
-      console.log("SUCCESS!!")
-      const uploadedFiles = result.successful.map((file) => ({
-        id: file.id,
-        name: file.name,
-        type: file.type,
-        size: file.size,
-        url: URL.createObjectURL(file.data),
-      }));
-      this.setState({ uploadedFiles });
-    });
-  }
+function UploadForm() {
+  const [file, setFile] = useState();
 
+  const handleFileChange = (e) => {
+    if (e.target.files) {
+      setFile(e.target.files[0]);
+    }
+  };
 
-  render() {
-    return (
-      <div>
-        <Dashboard
-          uppy={this.uppy}
-          plugins={["Webcam"]}
-          inline={true}
-          height={200}
-        />
+  const handleUploadClick = () => {
+    if (!file) {
+      return;
+    }
 
-      </div>
-    );
-  }
+    // 👇 Uploading the file using the fetch API to the server
+    fetch('https://httpbin.org/post', {
+      method: 'POST',
+      body: file,
+      // 👇 Set headers manually for single file upload
+      headers: {
+        'content-type': file.type,
+        'content-length': `${file.size}`, // 👈 Headers need to be a string
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => console.log(data))
+      .catch((err) => console.error(err));
+  };
+
+  return (
+    <div>
+      <input type="file" onChange={handleFileChange} />
+
+      <div>{file && `${file.name} - ${file.type}`}</div>
+
+      <button onClick={handleUploadClick}>Upload</button>
+    </div>
+  );
 }
 
 export default UploadForm;
